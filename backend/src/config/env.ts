@@ -12,7 +12,7 @@ const envSchema = z
       .string()
       .transform((value) => value.split(',').map((origin) => origin.trim()))
       .default('http://localhost:3000'),
-    DATABASE_URL: z.string().url().optional(),
+    DATABASE_URL: z.string().url(),
     SESSION_SECRET: z.string().min(1),
     JWT_SECRET: z.string().min(1),
     JWT_EXPIRES_IN: z.string().default('7d'),

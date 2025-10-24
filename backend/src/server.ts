@@ -2,9 +2,20 @@ import app from './app';
 import { ENV } from '@/config/env';
 import { errorHandler } from '@/middleware/errorHandler';
 import { notFoundHandler } from '@/middleware/notFound';
+import { connectPrisma, disconnectPrisma } from '@/lib/prisma';
+import { logger } from '@/utils/logger';
 
 app.use(notFoundHandler);
 app.use(errorHandler);
+
+void (async () => {
+  try {
+    await connectPrisma();
+  } catch (error) {
+    logger.error('Unable to establish database connection at startup', error);
+    process.exit(1);
+  }
+})();
 
 const server = app.listen(ENV.port, ENV.host, () => {
   console.log(`
@@ -19,19 +30,23 @@ const server = app.listen(ENV.port, ENV.host, () => {
   `);
 });
 
-process.on('SIGTERM', () => {
-  console.log('SIGTERM signal received: closing HTTP server');
+const gracefulShutdown = (signal: NodeJS.Signals) => {
+  logger.info(`${signal} signal received: closing HTTP server`);
   server.close(() => {
-    console.log('HTTP server closed');
+    logger.info('HTTP server closed');
+    disconnectPrisma()
+      .then(() => {
+        logger.info('Prisma client disconnected');
+        process.exit(0);
+      })
+      .catch((error) => {
+        logger.error('Error disconnecting Prisma client', error);
+        process.exit(1);
+      });
   });
-});
+};
 
-process.on('SIGINT', () => {
-  console.log('\nSIGINT signal received: closing HTTP server');
-  server.close(() => {
-    console.log('HTTP server closed');
-    process.exit(0);
-  });
-});
+process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
+process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 export default server;
