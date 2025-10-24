@@ -66,6 +66,11 @@ const mockDb = {
   refreshTokens: new Map<string, RefreshTokenRecord>(),
   refreshTokenHashIndex: new Map<string, string>(),
   auditLogs: new Map<string, AuditLogRecord>(),
+  courses: new Map<string, unknown>(),
+  sections: new Map<string, unknown>(),
+  lessons: new Map<string, unknown>(),
+  quizzes: new Map<string, unknown>(),
+  instructors: new Map<string, unknown>(),
 };
 
 function clone<T>(input: T): T {
@@ -77,6 +82,11 @@ function resetMockDb() {
   mockDb.refreshTokens.clear();
   mockDb.refreshTokenHashIndex.clear();
   mockDb.auditLogs.clear();
+  mockDb.courses.clear();
+  mockDb.sections.clear();
+  mockDb.lessons.clear();
+  mockDb.quizzes.clear();
+  mockDb.instructors.clear();
 }
 
 function matchesWhere<T extends Record<string, unknown>>(
@@ -286,6 +296,97 @@ vi.mock('@/lib/prisma', () => {
 
         mockDb.auditLogs.set(record.id, record);
         return clone(record);
+      },
+    },
+    course: {
+      async findMany() {
+        return [];
+      },
+      async findUnique() {
+        return null;
+      },
+      async create() {
+        return null;
+      },
+      async update() {
+        return null;
+      },
+      async delete() {
+        return null;
+      },
+      async count() {
+        return 0;
+      },
+    },
+    instructor: {
+      async findMany() {
+        return [];
+      },
+      async findUnique() {
+        return null;
+      },
+      async create() {
+        return null;
+      },
+      async update() {
+        return null;
+      },
+      async delete() {
+        return null;
+      },
+      async count() {
+        return 0;
+      },
+    },
+    section: {
+      async findMany() {
+        return [];
+      },
+      async findUnique() {
+        return null;
+      },
+      async create() {
+        return null;
+      },
+      async update() {
+        return null;
+      },
+      async delete() {
+        return null;
+      },
+    },
+    lesson: {
+      async findMany() {
+        return [];
+      },
+      async findUnique() {
+        return null;
+      },
+      async create() {
+        return null;
+      },
+      async update() {
+        return null;
+      },
+      async delete() {
+        return null;
+      },
+    },
+    quiz: {
+      async findMany() {
+        return [];
+      },
+      async findUnique() {
+        return null;
+      },
+      async create() {
+        return null;
+      },
+      async update() {
+        return null;
+      },
+      async delete() {
+        return null;
       },
     },
   };
