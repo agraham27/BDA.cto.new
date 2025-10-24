@@ -1,9 +1,16 @@
 export interface User {
   id: string;
   email: string;
-  name: string;
   role: 'student' | 'admin' | 'instructor';
-  avatar?: string;
+  name?: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  avatar?: string | null;
+  avatarUrl?: string | null;
+  isActive?: boolean;
+  isEmailVerified?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AuthTokens {
