@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { Button, Card, CardContent, CardHeader, DataTable } from '@/components/ui';
 import type { DataTableColumn } from '@/components/ui';
 
@@ -68,67 +69,65 @@ const columns: DataTableColumn<Student>[] = [
 
 export default function AdminDashboard() {
   return (
-    <div className="container mx-auto px-4 py-16">
+    <div>
       <div className="mb-8">
-        <div className="page-header">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="page-title">Quản trị hệ thống</h1>
-            <p className="page-subtitle">Quản lý học viên, khóa học và vận hành trung tâm</p>
+            <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+            <p className="mt-1 text-sm text-gray-600">Overview of your learning management system</p>
           </div>
           <div className="flex gap-3">
             <Button variant="secondary" size="sm">
-              Xuất báo cáo
+              Export Report
             </Button>
-            <Button variant="primary" size="sm">
-              Thêm học viên
+            <Button asChild variant="primary" size="sm">
+              <Link href="users/new">Add Student</Link>
             </Button>
           </div>
         </div>
       </div>
 
-      <div className="content-grid">
-        <div className="span-12 space-y-6">
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-sm text-gray-600">Tổng số học viên</p>
-                <p className="mt-2 text-3xl font-semibold text-gray-900">234</p>
-                <p className="mt-2 text-xs text-success-600">↑ 12% so với tháng trước</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-sm text-gray-600">Khóa học đang mở</p>
-                <p className="mt-2 text-3xl font-semibold text-gray-900">18</p>
-                <p className="mt-2 text-xs text-primary-600">3 khóa mới tháng này</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-sm text-gray-600">Tỷ lệ hoàn thành</p>
-                <p className="mt-2 text-3xl font-semibold text-gray-900">87%</p>
-                <p className="mt-2 text-xs text-gray-500">Trung bình toàn hệ thống</p>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-sm text-gray-600">Doanh thu tháng</p>
-                <p className="mt-2 text-3xl font-semibold text-gray-900">₫42M</p>
-                <p className="mt-2 text-xs text-success-600">↑ 8% so với tháng trước</p>
-              </CardContent>
-            </Card>
-          </div>
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-4">
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-sm text-gray-600">Total Students</p>
+              <p className="mt-2 text-3xl font-semibold text-gray-900">234</p>
+              <p className="mt-2 text-xs text-success-600">↑ 12% from last month</p>
+            </CardContent>
+          </Card>
 
           <Card>
-            <CardHeader title="Danh sách học viên" />
-            <CardContent>
-              <DataTable data={students} columns={columns} emptyMessage="Không có học viên nào" />
+            <CardContent className="pt-6">
+              <p className="text-sm text-gray-600">Active Courses</p>
+              <p className="mt-2 text-3xl font-semibold text-gray-900">18</p>
+              <p className="mt-2 text-xs text-primary-600">3 new this month</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-sm text-gray-600">Completion Rate</p>
+              <p className="mt-2 text-3xl font-semibold text-gray-900">87%</p>
+              <p className="mt-2 text-xs text-gray-500">System-wide average</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <p className="text-sm text-gray-600">Monthly Revenue</p>
+              <p className="mt-2 text-3xl font-semibold text-gray-900">₫42M</p>
+              <p className="mt-2 text-xs text-success-600">↑ 8% from last month</p>
             </CardContent>
           </Card>
         </div>
+
+        <Card>
+          <CardHeader title="Recent Students" />
+          <CardContent>
+            <DataTable data={students} columns={columns} emptyMessage="No students found" />
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
