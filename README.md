@@ -175,6 +175,7 @@ Shared TypeScript configuration (`tsconfig.base.json`) with per-package aliases:
 @/middleware/* → ./src/middleware/*
 @/types/*      → ./src/types/*
 @/utils/*      → ./src/utils/*
+@/lib/*        → ./src/lib/*
 ```
 
 Import paths stay consistent across the codebase, and IDE support is provided through the shared `tsconfig.base.json` and `.vscode` settings.
@@ -194,6 +195,43 @@ Use the `Button` component in `frontend/src/components/ui/button.tsx` as an exam
 - Backend loads environment variables through `zod` validation (`backend/src/config/env.ts`).
 - Frontend exposes public environment variables (prefixed with `NEXT_PUBLIC_`).
 - Sample env files are provided under each workspace.
+
+---
+
+## 🗄️ Database & Prisma
+
+The backend now uses [Prisma](https://www.prisma.io/) to manage a PostgreSQL schema. Relevant files live under `backend/prisma/` (schema, migrations, and seeding utilities) and database access is centralized in `backend/src/lib/prisma.ts`.
+
+### 1. Configure PostgreSQL
+
+1. Copy `backend/.env.example` to `backend/.env` and update `DATABASE_URL` with your connection string.
+2. Ensure the target database exists (for example, create it with `createdb hocvienbigdipper`).
+
+### 2. Apply Migrations
+
+```bash
+# Apply migrations locally and regenerate the Prisma Client
+npm run prisma:migrate:dev --workspace=backend
+
+# Format the schema or generate the client independently (optional)
+npm run prisma:format --workspace=backend
+npm run prisma:generate --workspace=backend
+
+# Deploy migrations in CI/production environments
+npm run prisma:migrate:deploy --workspace=backend
+```
+
+The initial schema migration is checked in at `backend/prisma/migrations/20241024000000_initial/`.
+
+### 3. Seed Data (Placeholder)
+
+Seed data lives in `backend/prisma/seed.ts`. Run it with:
+
+```bash
+npm run prisma:seed --workspace=backend
+```
+
+Update the placeholder script with real data as the application evolves.
 
 ---
 
