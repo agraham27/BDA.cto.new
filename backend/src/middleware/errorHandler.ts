@@ -1,5 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import { ZodError } from 'zod';
 
 export class AppError extends Error {
   statusCode: number;
@@ -15,8 +16,15 @@ export class AppError extends Error {
 }
 
 export function errorHandler(err: Error, _req: Request, res: Response, _next: NextFunction): void {
-  const statusCode = err instanceof AppError ? err.statusCode : StatusCodes.INTERNAL_SERVER_ERROR;
+  if (err instanceof ZodError) {
+    return res.status(StatusCodes.BAD_REQUEST).json({
+      success: false,
+      message: 'Request validation failed',
+      errors: err.issues,
+    });
+  }
 
+  const statusCode = err instanceof AppError ? err.statusCode : StatusCodes.INTERNAL_SERVER_ERROR;
   const message = err.message || 'Something went wrong';
 
   if (process.env.NODE_ENV === 'development') {
