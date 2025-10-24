@@ -1,7 +1,8 @@
 import clsx, { ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export function cn(...classes: ClassValue[]) {
-  return clsx(classes);
+  return twMerge(clsx(classes));
 }
 
 export async function fetchApi(path: string, options?: RequestInit) {
@@ -21,4 +22,18 @@ export async function fetchApi(path: string, options?: RequestInit) {
   }
 
   return response.json();
+}
+
+export function formatDate(date: Date | string): string {
+  const d = typeof date === 'string' ? new Date(date) : date;
+  return new Intl.DateTimeFormat('vi-VN', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  }).format(d);
+}
+
+export function truncate(str: string, maxLength: number): string {
+  if (str.length <= maxLength) return str;
+  return str.slice(0, maxLength) + '...';
 }
