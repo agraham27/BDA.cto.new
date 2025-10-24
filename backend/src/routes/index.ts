@@ -1,5 +1,7 @@
 import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
+import authRoutes from '@/routes/auth';
+import profileRoutes from '@/routes/profile';
 
 const router = Router();
 
@@ -18,5 +20,8 @@ router.get('/api/health', (_req, res) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+router.use('/api/auth', authRoutes);
+router.use('/api/profile', profileRoutes);
 
 export default router;
