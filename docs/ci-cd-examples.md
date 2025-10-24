@@ -18,41 +18,41 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '18'
           cache: 'npm'
-      
+
       - name: Install dependencies (Backend)
         working-directory: ./backend
         run: npm ci
-      
+
       - name: Run tests (Backend)
         working-directory: ./backend
         run: npm test
         continue-on-error: true
-      
+
       - name: Build backend
         working-directory: ./backend
         run: npm run build
-      
+
       - name: Install dependencies (Frontend)
         working-directory: ./frontend
         run: npm ci
-      
+
       - name: Build frontend
         working-directory: ./frontend
         run: npm run build
         env:
           NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL }}
           NEXT_PUBLIC_SITE_URL: ${{ secrets.NEXT_PUBLIC_SITE_URL }}
-      
+
       - name: Deploy to VPS
         uses: appleboy/ssh-action@v1.0.0
         with:
@@ -64,23 +64,24 @@ jobs:
             cd /var/www/hocvienbigdipper/repo
             git pull origin main
             ./scripts/deploy.sh
-      
+
       - name: Health Check
         run: |
           sleep 10
           curl -f https://hocvienbigdipper.com/health || exit 1
           curl -f https://api.hocvienbigdipper.com/health || exit 1
-      
+
       - name: Notify on success
         if: success()
         run: echo "Deployment successful!"
-      
+
       - name: Notify on failure
         if: failure()
         run: echo "Deployment failed!"
 ```
 
 ### Required GitHub Secrets:
+
 - `VPS_HOST`: Your VPS IP or hostname
 - `VPS_USER`: SSH username (e.g., `deploy`)
 - `VPS_SSH_KEY`: Private SSH key for authentication
@@ -101,7 +102,7 @@ stages:
   - deploy
 
 variables:
-  NODE_VERSION: "18"
+  NODE_VERSION: '18'
 
 test:backend:
   stage: test
@@ -178,6 +179,7 @@ deploy:production:
 ```
 
 ### Required GitLab CI/CD Variables:
+
 - `VPS_HOST`: Your VPS IP or hostname
 - `VPS_USER`: SSH username
 - `SSH_PRIVATE_KEY`: Private SSH key
@@ -191,20 +193,20 @@ Create `Jenkinsfile`:
 ```groovy
 pipeline {
     agent any
-    
+
     environment {
         NODE_VERSION = '18'
         VPS_HOST = credentials('vps-host')
         VPS_USER = credentials('vps-user')
     }
-    
+
     stages {
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
-        
+
         stage('Install Dependencies') {
             parallel {
                 stage('Backend') {
@@ -223,7 +225,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Test') {
             parallel {
                 stage('Backend Tests') {
@@ -242,7 +244,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Build') {
             parallel {
                 stage('Backend Build') {
@@ -261,7 +263,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Deploy') {
             when {
                 branch 'main'
@@ -274,7 +276,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Health Check') {
             steps {
                 sh '''
@@ -285,7 +287,7 @@ pipeline {
             }
         }
     }
-    
+
     post {
         success {
             echo 'Deployment successful!'
@@ -413,29 +415,34 @@ workflows:
 ## Best Practices
 
 ### 1. Environment Variables
+
 - Never commit secrets to version control
 - Use CI/CD platform's secret management
 - Rotate secrets regularly
 
 ### 2. Deployment Strategy
+
 - Always run tests before deployment
 - Use health checks to verify deployment
 - Implement rollback mechanisms
 - Deploy during low-traffic periods
 
 ### 3. Security
+
 - Use SSH key authentication
 - Limit SSH access to CI/CD IP ranges
 - Enable audit logging
 - Review deployment logs regularly
 
 ### 4. Monitoring
+
 - Set up alerts for failed deployments
 - Monitor application health after deployment
 - Track deployment metrics (duration, frequency)
 - Implement automatic rollback on health check failure
 
 ### 5. Database Migrations
+
 - Run migrations before code deployment
 - Test migrations in staging first
 - Keep backup before migrations

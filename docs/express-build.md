@@ -46,6 +46,7 @@ backend/
 ## 3. Build Tooling
 
 ### Package.json Scripts
+
 ```json
 {
   "scripts": {
@@ -61,6 +62,7 @@ backend/
 ```
 
 ### Build Process
+
 1. Run type-checking and compile TypeScript to JavaScript using `tsc`.
 2. Output compiled files to `dist/` directory.
 3. Bundle optional configuration files or views as needed.
@@ -80,6 +82,7 @@ npx esbuild src/server.ts \
 ```
 
 Adjust the build script in `package.json`:
+
 ```json
 "build": "esbuild src/server.ts --bundle --platform=node --target=node18 --outfile=dist/server.js --minify --sourcemap"
 ```
@@ -87,6 +90,7 @@ Adjust the build script in `package.json`:
 ## 4. Environment Variables
 
 Backend `.env` must include:
+
 ```env
 NODE_ENV=production
 PORT=5000
@@ -99,6 +103,7 @@ FRONTEND_URL=https://hocvienbigdipper.com
 ```
 
 Use `dotenv` to load environment variables:
+
 ```typescript
 import dotenv from 'dotenv';
 dotenv.config();
@@ -175,6 +180,7 @@ Expose metrics (optional) using `prom-client`.
 - Integrate with alerting systems (Sentry) using DSN from `.env`.
 
 ## 10. Deployment Checklist
+
 - [ ] Update dependencies (`npm ci --production`).
 - [ ] Run migrations (`npm run migrate:deploy`).
 - [ ] Run build (`npm run build`).
@@ -209,8 +215,8 @@ Example GitHub Actions snippet:
     host: ${{ secrets.VPS_HOST }}
     username: ${{ secrets.VPS_USER }}
     key: ${{ secrets.VPS_SSH_KEY }}
-    source: "dist/**"
-    target: "/var/www/hocvienbigdipper/backend"
+    source: 'dist/**'
+    target: '/var/www/hocvienbigdipper/backend'
 
 - name: Restart PM2
   uses: appleboy/ssh-action@master

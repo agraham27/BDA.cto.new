@@ -9,31 +9,31 @@ To enable Next.js standalone output mode for production deployment, configure yo
 const nextConfig = {
   // Enable standalone output for self-contained production builds
   output: 'standalone',
-  
+
   // Disable telemetry in production
   telemetry: {
     enabled: false,
   },
-  
+
   // Compression (handled by Nginx, disable in Next.js)
   compress: false,
-  
+
   // Production optimizations
   reactStrictMode: true,
   swcMinify: true,
-  
+
   // Environment variables (exposed to browser)
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://api.hocvienbigdipper.com',
     NEXT_PUBLIC_SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'https://hocvienbigdipper.com',
   },
-  
+
   // Image optimization
   images: {
     domains: ['api.hocvienbigdipper.com', 'hocvienbigdipper.com'],
     formats: ['image/avif', 'image/webp'],
   },
-  
+
   // Security headers (also configured in Nginx)
   async headers() {
     return [
@@ -56,7 +56,7 @@ const nextConfig = {
       },
     ];
   },
-  
+
   // Webpack configuration (if needed)
   webpack: (config, { isServer }) => {
     if (!isServer) {
