@@ -3,6 +3,7 @@ import { ENV } from '@/config/env';
 import { errorHandler } from '@/middleware/errorHandler';
 import { notFoundHandler } from '@/middleware/notFound';
 import { connectPrisma, disconnectPrisma } from '@/lib/prisma';
+import { ensureUploadDirectories } from '@/utils/fileStorage';
 import { logger } from '@/utils/logger';
 
 app.use(notFoundHandler);
@@ -11,8 +12,10 @@ app.use(errorHandler);
 void (async () => {
   try {
     await connectPrisma();
+    await ensureUploadDirectories();
+    logger.info('Upload directories initialized');
   } catch (error) {
-    logger.error('Unable to establish database connection at startup', error);
+    logger.error('Unable to establish database connection or initialize storage at startup', error);
     process.exit(1);
   }
 })();

@@ -33,6 +33,6 @@
       "@/lib/*": ["./src/lib/*"]
     }
   },
-  "include": ["src/**/*", "prisma/**/*.ts", "vitest.config.ts"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist", "prisma", "vitest.config.ts", "scripts"]
 }

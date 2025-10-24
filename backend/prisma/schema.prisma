@@ -50,6 +50,19 @@ enum CourseLevel {
   ALL_LEVELS
 }
 
+enum FileCategory {
+  VIDEO
+  DOCUMENT
+  IMAGE
+  OTHER
+}
+
+enum FileVisibility {
+  PUBLIC
+  PRIVATE
+  PROTECTED
+}
+
 model User {
   id                              String        @id @default(cuid())
   email                           String        @unique
@@ -317,17 +330,32 @@ model BlogPostCategory {
 }
 
 model File {
-  id         String   @id @default(cuid())
-  uploaderId String?
-  courseId   String?
-  lessonId   String?
-  blogPostId String?
-  url        String
-  key        String?
-  filename   String
-  mimeType   String?
-  size       Int?
-  createdAt  DateTime @default(now())
+  id               String         @id @default(cuid())
+  uploaderId       String?
+  courseId         String?
+  lessonId         String?
+  blogPostId       String?
+  filename         String
+  originalFilename String
+  mimeType         String
+  size             Int
+  path             String
+  url              String
+  key              String?
+  category         FileCategory   @default(OTHER)
+  visibility       FileVisibility @default(PRIVATE)
+  metadata         Json?
+  checksum         String?
+  duration         Int?
+  width            Int?
+  height           Int?
+  isProcessed      Boolean        @default(false)
+  processedAt      DateTime?
+  expiresAt        DateTime?
+  accessCount      Int            @default(0)
+  lastAccessedAt   DateTime?
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   uploader User?     @relation("UploadedFiles", fields: [uploaderId], references: [id], onDelete: SetNull)
   course   Course?   @relation("CourseFiles", fields: [courseId], references: [id], onDelete: Cascade)
@@ -338,4 +366,7 @@ model File {
   @@index([lessonId])
   @@index([blogPostId])
   @@index([uploaderId])
+  @@index([category])
+  @@index([visibility])
+  @@index([expiresAt])
 }

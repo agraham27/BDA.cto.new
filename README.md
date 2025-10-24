@@ -244,6 +244,7 @@ Comprehensive deployment and infrastructure documentation is available in `docs/
 - [Next.js Configuration](docs/nextjs-config.md)
 - [PostgreSQL Setup](docs/postgresql.md)
 - [Security Hardening](docs/security-hardening.md)
+- [File Storage & Streaming](docs/storage-setup.md)
 
 Deployment scripts and PM2/Nginx configs remain in `deploy/` and `scripts/`.
 
