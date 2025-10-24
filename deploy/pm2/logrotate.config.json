@@ -1,0 +1,13 @@
+{
+  "max_size": "200M",
+  "retain": 30,
+  "compress": true,
+  "dateFormat": "YYYY-MM-DD_HHmm",
+  "workerInterval": 3600,
+  "rotateInterval": "0 0 * * *",
+  "max_files": 20,
+  "rotateModule": true,
+  "serviceRestart": false,
+  "retainMode": "remove",
+  "threshold": "1G"
+}
