@@ -2,6 +2,7 @@ import { Router } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import authRoutes from '@/routes/auth';
 import profileRoutes from '@/routes/profile';
+import adminRoutes from '@/routes/admin';
 
 const router = Router();
 
@@ -23,5 +24,6 @@ router.get('/api/health', (_req, res) => {
 
 router.use('/api/auth', authRoutes);
 router.use('/api/profile', profileRoutes);
+router.use('/api/admin', adminRoutes);
 
 export default router;
