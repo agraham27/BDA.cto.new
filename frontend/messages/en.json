@@ -1,0 +1,47 @@
+{
+  "navigation": {
+    "home": "Home",
+    "about": "About",
+    "students": "Students",
+    "admin": "Admin",
+    "login": "Log in",
+    "logout": "Log out",
+    "dashboard": "Dashboard",
+    "settings": "Settings"
+  },
+  "hero": {
+    "title": "Nurturing the next generation of space explorers",
+    "subtitle": "Big Dipper's education platform connects curriculum, student management, and center operations in one unified experience.",
+    "cta_primary": "Explore Programs",
+    "cta_secondary": "Learn More"
+  },
+  "footer": {
+    "tagline": "Hoc Vien Big Dipper — Leading institution for science education and space exploration.",
+    "company": "Company",
+    "about": "About us",
+    "careers": "Careers",
+    "blog": "Blog",
+    "resources": "Resources",
+    "docs": "Documentation",
+    "support": "Support",
+    "legal": "Legal",
+    "privacy": "Privacy Policy",
+    "terms": "Terms of Service",
+    "contact": "Contact"
+  },
+  "auth": {
+    "welcome_back": "Welcome back",
+    "sign_in_to_continue": "Sign in to continue to your classes and dashboard.",
+    "email": "Email",
+    "password": "Password",
+    "forgot_password": "Forgot password?",
+    "sign_in": "Sign in",
+    "create_account": "Create new account"
+  },
+  "dashboard": {
+    "progress": "Learning Progress",
+    "upcoming_lessons": "Upcoming Lessons",
+    "performance_overview": "Performance Overview",
+    "view_details": "View Details"
+  }
+}

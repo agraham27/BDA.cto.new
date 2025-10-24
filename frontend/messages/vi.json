@@ -1,0 +1,47 @@
+{
+  "navigation": {
+    "home": "Trang chủ",
+    "about": "Giới thiệu",
+    "students": "Sinh viên",
+    "admin": "Quản trị",
+    "login": "Đăng nhập",
+    "logout": "Đăng xuất",
+    "dashboard": "Bảng điều khiển",
+    "settings": "Cài đặt"
+  },
+  "hero": {
+    "title": "Nuôi dưỡng những nhà thám hiểm vũ trụ tiếp theo",
+    "subtitle": "Nền tảng giáo dục Big Dipper kết nối chương trình đào tạo, quản lý học viên và vận hành trung tâm trong một trải nghiệm thống nhất.",
+    "cta_primary": "Khám phá chương trình",
+    "cta_secondary": "Tìm hiểu thêm"
+  },
+  "footer": {
+    "tagline": "Hoc Vien Big Dipper — Học viện dẫn đầu về giáo dục khoa học và khám phá vũ trụ.",
+    "company": "Công ty",
+    "about": "Về chúng tôi",
+    "careers": "Tuyển dụng",
+    "blog": "Blog",
+    "resources": "Tài nguyên",
+    "docs": "Tài liệu",
+    "support": "Hỗ trợ",
+    "legal": "Pháp lý",
+    "privacy": "Chính sách bảo mật",
+    "terms": "Điều khoản sử dụng",
+    "contact": "Liên hệ"
+  },
+  "auth": {
+    "welcome_back": "Chào mừng trở lại",
+    "sign_in_to_continue": "Đăng nhập để tiếp tục truy cập các lớp học và bảng điều khiển.",
+    "email": "Email",
+    "password": "Mật khẩu",
+    "forgot_password": "Quên mật khẩu?",
+    "sign_in": "Đăng nhập",
+    "create_account": "Tạo tài khoản mới"
+  },
+  "dashboard": {
+    "progress": "Tiến độ học tập",
+    "upcoming_lessons": "Buổi học sắp tới",
+    "performance_overview": "Tổng quan kết quả",
+    "view_details": "Xem chi tiết"
+  }
+}

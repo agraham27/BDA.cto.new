@@ -3,19 +3,174 @@
 @tailwind utilities;
 
 :root {
-  --background: 255 255 255;
-  --foreground: 15 23 42;
-  --muted: 148 163 184;
-  --accent: 14 165 233;
+  color-scheme: light;
+  --font-sans: 'Be Vietnam Pro', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-display: 'Space Grotesk', 'Be Vietnam Pro', system-ui, sans-serif;
+
+  --color-background: 248 249 255;
+  --color-surface: 255 255 255;
+  --color-surface-muted: 240 242 250;
+  --color-foreground: 13 26 54;
+  --color-foreground-muted: 103 115 138;
+  --color-border: 221 227 241;
+  --color-border-strong: 192 202 229;
+  --color-overlay: 12 21 41 / 0.55;
 }
 
 body {
   min-height: 100vh;
-  background: rgb(var(--background));
-  color: rgb(var(--foreground));
+  background: rgb(var(--color-background));
+  color: rgb(var(--color-foreground));
   font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+body::before {
+  position: fixed;
+  inset: 0;
+  content: '';
+  pointer-events: none;
+  background: radial-gradient(circle at 20% 20%, rgba(12, 138, 235, 0.12), transparent 50%),
+    radial-gradient(circle at 80% 30%, rgba(238, 115, 248, 0.1), transparent 55%),
+    radial-gradient(circle at 12% 80%, rgba(255, 192, 27, 0.1), transparent 60%);
+  z-index: -1;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: none;
 }
 
 ::selection {
-  background-color: rgba(14, 165, 233, 0.2);
+  background-color: rgba(12, 138, 235, 0.2);
+}
+
+@layer base {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-display);
+    color: rgb(var(--color-foreground));
+    letter-spacing: -0.01em;
+  }
+
+  h1 {
+    @apply text-5xl md:text-6xl font-semibold;
+  }
+
+  h2 {
+    @apply text-4xl md:text-5xl font-semibold;
+  }
+
+  h3 {
+    @apply text-3xl md:text-4xl font-semibold;
+  }
+
+  h4 {
+    @apply text-2xl md:text-3xl font-semibold;
+  }
+
+  h5 {
+    @apply text-xl md:text-2xl font-semibold;
+  }
+
+  h6 {
+    @apply text-lg md:text-xl font-semibold;
+  }
+
+  p {
+    @apply text-base text-gray-600;
+  }
+
+  strong {
+    @apply text-gray-900 font-semibold;
+  }
+
+  small {
+    @apply text-sm text-gray-500;
+  }
+
+  button,
+  input,
+  textarea,
+  select {
+    font-family: inherit;
+  }
+}
+
+@layer components {
+  .surface {
+    @apply rounded-3xl bg-white/90 shadow-lg shadow-primary-900/5 backdrop-blur;
+  }
+
+  .card-grid {
+    @apply grid gap-6 sm:grid-cols-2 xl:grid-cols-3;
+  }
+
+  .content-grid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+  }
+
+  .content-grid > .span-12 {
+    grid-column: span 12 / span 12;
+  }
+
+  .content-grid > .span-8 {
+    grid-column: span 12 / span 12;
+  }
+
+  @media (min-width: 768px) {
+    .content-grid > .span-8 {
+      grid-column: span 8 / span 8;
+    }
+  }
+
+  .content-grid > .span-4 {
+    grid-column: span 12 / span 12;
+  }
+
+  @media (min-width: 768px) {
+    .content-grid > .span-4 {
+      grid-column: span 4 / span 4;
+    }
+  }
+
+  .page-header {
+    @apply flex flex-col gap-3 md:flex-row md:items-center md:justify-between;
+  }
+
+  .page-title {
+    @apply text-3xl font-semibold text-gray-900;
+  }
+
+  .page-subtitle {
+    @apply text-gray-500;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .backdrop-overlay {
+    background: rgba(12, 21, 41, 0.55);
+  }
+
+  .shadow-elevated {
+    box-shadow: 0 20px 50px -30px rgba(11, 61, 110, 0.4), 0 18px 26px -12px rgba(238, 115, 248, 0.25);
+  }
+
+  .shadow-card {
+    box-shadow: 0 12px 30px -16px rgba(11, 61, 110, 0.45);
+  }
 }
