@@ -5,32 +5,38 @@ This guide covers the provisioning of PostgreSQL, applying migrations, and confi
 ## 1. Provisioning PostgreSQL on Ubuntu 22.04+ (VPS)
 
 1. Update system packages:
+
    ```bash
    sudo apt update && sudo apt upgrade -y
    ```
 
 2. Install PostgreSQL and the contrib package:
+
    ```bash
    sudo apt install -y postgresql postgresql-contrib
    ```
 
 3. Enable and start PostgreSQL service:
+
    ```bash
    sudo systemctl enable postgresql
    sudo systemctl start postgresql
    ```
 
 4. Secure the default `postgres` user (optional):
+
    ```bash
    sudo passwd postgres
    ```
 
 5. Switch to the postgres user to create the application database and user:
+
    ```bash
    sudo -iu postgres
    ```
 
 6. Create the application database and user:
+
    ```bash
    psql <<'SQL'
    CREATE ROLE hocvienbigdipper_user WITH LOGIN PASSWORD 'change-me-now';
@@ -40,11 +46,13 @@ This guide covers the provisioning of PostgreSQL, applying migrations, and confi
    ```
 
 7. Create the production schema (if needed):
+
    ```bash
    psql -d hocvienbigdipper -c "CREATE SCHEMA IF NOT EXISTS public AUTHORIZATION hocvienbigdipper_user;"
    ```
 
 8. Exit the postgres user shell:
+
    ```bash
    exit
    ```
@@ -68,6 +76,7 @@ We assume the Express backend (located at `./backend`) uses a migration tool suc
 ### Recommended Project Scripts
 
 Add the following scripts to `backend/package.json`:
+
 ```json
 {
   "scripts": {
@@ -84,6 +93,7 @@ Adjust for your tool (e.g., `knex migrate:latest`).
 ### Running Migrations in Production
 
 On the VPS:
+
 1. Navigate to the backend directory:
    ```bash
    cd /var/www/hocvienbigdipper/backend
@@ -104,6 +114,7 @@ On the VPS:
 ### Automated Migrations via CI/CD
 
 In your deployment pipeline, ensure migrations run before reloading PM2:
+
 ```bash
 pm2 stop hocvienbigdipper-backend
 npm ci --only=production
@@ -117,6 +128,7 @@ pm2 reload ecosystem.config.js --only hocvienbigdipper-backend
 ### Daily Backup Script
 
 Create `/usr/local/bin/pg_backup.sh` (make executable with `chmod +x`):
+
 ```bash
 #!/bin/bash
 set -euo pipefail
@@ -138,6 +150,7 @@ find "$BACKUP_DIR" -type f -mtime +$RETENTION_DAYS -delete
 ```
 
 Configure permissions:
+
 ```bash
 sudo chown postgres:postgres /usr/local/bin/pg_backup.sh
 sudo chmod 750 /usr/local/bin/pg_backup.sh
@@ -146,10 +159,13 @@ sudo chmod 750 /usr/local/bin/pg_backup.sh
 ### Cron Job
 
 Schedule the script to run daily at 2 AM:
+
 ```bash
 sudo crontab -u postgres -e
 ```
+
 Add:
+
 ```
 0 2 * * * /usr/local/bin/pg_backup.sh >> /var/log/postgres-backup.log 2>&1
 ```
@@ -157,11 +173,13 @@ Add:
 ### Upload Backups to Object Storage (AWS S3 Example)
 
 1. Install AWS CLI:
+
    ```bash
    sudo apt install -y awscli
    ```
 
 2. Configure credentials:
+
    ```bash
    aws configure
    ```
@@ -176,6 +194,7 @@ Add `BACKUP_S3_BUCKET` and `BACKUP_S3_PREFIX` to your environment variables.
 ### Verify Backups
 
 Periodically test restoring backups in a staging environment:
+
 ```bash
 pg_restore -U hocvienbigdipper_user -d hocvienbigdipper_staging /path/to/backup.sql.gz
 ```

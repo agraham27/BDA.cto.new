@@ -50,11 +50,13 @@ This repository contains production-ready deployment configurations for:
 ## 🚀 Quick Deployment Steps
 
 ### 1. Prerequisites
+
 - Ubuntu 22.04+ VPS (min 2GB RAM)
 - Domain names: `hocvienbigdipper.com`, `api.hocvienbigdipper.com`
 - SSH access with sudo privileges
 
 ### 2. Initial Server Setup
+
 ```bash
 # Update system
 sudo apt update && sudo apt upgrade -y
@@ -70,6 +72,7 @@ sudo ufw enable
 ```
 
 ### 3. Install Dependencies
+
 ```bash
 # Node.js 18+
 curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
@@ -86,6 +89,7 @@ sudo npm install -g pm2
 ```
 
 ### 4. Deploy Application
+
 ```bash
 # Clone repository
 git clone <your-repo> /var/www/hocvienbigdipper/repo
@@ -107,6 +111,7 @@ cd /var/www/hocvienbigdipper/repo
 ```
 
 ### 5. Verify Deployment
+
 ```bash
 # Check services
 pm2 status
@@ -124,6 +129,7 @@ curl https://api.hocvienbigdipper.com/health
 ## 🔧 Configuration Highlights
 
 ### PM2 Ecosystem
+
 - **Frontend**: Cluster mode with max instances
 - **Backend**: 2 instances with cluster mode
 - **Memory Limits**: 1GB frontend, 512MB backend
@@ -131,6 +137,7 @@ curl https://api.hocvienbigdipper.com/health
 - **Log Rotation**: 200MB max size, 30 days retention
 
 ### Nginx Features
+
 - **HTTP/2**: Enabled for better performance
 - **SSL/TLS**: Let's Encrypt with auto-renewal
 - **Compression**: Gzip and Brotli (if available)
@@ -139,12 +146,14 @@ curl https://api.hocvienbigdipper.com/health
 - **Caching**: Static assets cached for 30 days
 
 ### PostgreSQL Backups
+
 - **Frequency**: Daily at 2 AM
 - **Format**: Custom format, gzipped
 - **Retention**: 30 days local, unlimited S3 (optional)
 - **Verification**: Integrity check after each backup
 
 ### Security Features
+
 - **Firewall**: UFW configured for SSH, HTTP, HTTPS
 - **Fail2Ban**: Intrusion detection and IP banning
 - **CSRF Protection**: Token-based validation
@@ -155,6 +164,7 @@ curl https://api.hocvienbigdipper.com/health
 ## 📊 Monitoring & Maintenance
 
 ### Daily Tasks
+
 ```bash
 # Check PM2 status
 pm2 status
@@ -170,6 +180,7 @@ ls -lh /var/backups/postgresql/
 ```
 
 ### Weekly Tasks
+
 ```bash
 # Review Nginx logs
 sudo tail -100 /var/log/nginx/hocvienbigdipper-error.log
@@ -182,6 +193,7 @@ htop
 ```
 
 ### Monthly Tasks
+
 ```bash
 # Update system
 sudo apt update && sudo apt upgrade -y
@@ -197,6 +209,7 @@ sudo lynis audit system
 ## 🔄 Deployment Workflow
 
 ### Manual Deployment
+
 ```bash
 ssh deploy@your-server
 cd /var/www/hocvienbigdipper/repo
@@ -205,9 +218,11 @@ git pull origin main
 ```
 
 ### CI/CD Deployment
+
 Set up GitHub Actions, GitLab CI, or Jenkins using examples in `docs/ci-cd-examples.md`.
 
 ### Rollback Procedure
+
 ```bash
 cd /var/www/hocvienbigdipper/repo
 git log --oneline -5
@@ -232,14 +247,14 @@ git reset --hard <previous-commit>
 
 ## 📚 Documentation Reference
 
-| Document | Purpose |
-|----------|---------|
-| [Deployment Playbook](docs/deployment-playbook.md) | Step-by-step VPS setup |
-| [PostgreSQL Guide](docs/postgresql.md) | Database setup and backups |
-| [Security Hardening](docs/security-hardening.md) | Security best practices |
-| [Next.js Config](docs/nextjs-config.md) | Frontend configuration |
-| [Express Build](docs/express-build.md) | Backend build guide |
-| [CI/CD Examples](docs/ci-cd-examples.md) | Pipeline configurations |
+| Document                                           | Purpose                    |
+| -------------------------------------------------- | -------------------------- |
+| [Deployment Playbook](docs/deployment-playbook.md) | Step-by-step VPS setup     |
+| [PostgreSQL Guide](docs/postgresql.md)             | Database setup and backups |
+| [Security Hardening](docs/security-hardening.md)   | Security best practices    |
+| [Next.js Config](docs/nextjs-config.md)            | Frontend configuration     |
+| [Express Build](docs/express-build.md)             | Backend build guide        |
+| [CI/CD Examples](docs/ci-cd-examples.md)           | Pipeline configurations    |
 
 ## 🔗 Key URLs
 
@@ -252,6 +267,7 @@ git reset --hard <previous-commit>
 ## 📞 Troubleshooting
 
 ### Services Not Starting
+
 ```bash
 # Check PM2 logs
 pm2 logs --err
@@ -265,6 +281,7 @@ sudo systemctl restart nginx
 ```
 
 ### Database Connection Issues
+
 ```bash
 # Check PostgreSQL
 sudo systemctl status postgresql
@@ -274,6 +291,7 @@ psql -U hocvienbigdipper_user -d hocvienbigdipper -h localhost
 ```
 
 ### SSL Certificate Issues
+
 ```bash
 # Check certificate status
 sudo certbot certificates
