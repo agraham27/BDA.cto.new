@@ -11,5 +11,8 @@ export { Select } from './select';
 export type { SelectOption } from './select';
 export { DataTable, Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './table';
 export type { DataTableColumn, DataTableProps } from './table';
+export { FileUpload } from './file-upload';
+export { Pagination } from './pagination';
+export { SimpleSelect } from './simple-select';
 export { Textarea } from './textarea';
 export type { TextareaProps } from './textarea';
