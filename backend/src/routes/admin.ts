@@ -46,6 +46,28 @@ import {
   deleteBlogPost,
   publishBlogPost,
 } from '@/controllers/adminBlogController';
+import {
+  getCategories,
+  getCategory,
+  createCategory,
+  updateCategory,
+  deleteCategory,
+} from '@/controllers/adminCategoryController';
+import {
+  getTags,
+  getTag,
+  createTag,
+  updateTag,
+  deleteTag,
+  mergeTags,
+} from '@/controllers/adminTagController';
+import {
+  getSeoSettings,
+  updateSeoSettings,
+  validateSchema,
+  calculatePostSeoScore,
+  previewSeo,
+} from '@/controllers/adminSeoController';
 
 const router = Router();
 
@@ -99,5 +121,27 @@ router.post('/blog-posts', createBlogPost);
 router.patch('/blog-posts/:id', updateBlogPost);
 router.delete('/blog-posts/:id', deleteBlogPost);
 router.post('/blog-posts/:id/publish', publishBlogPost);
+router.get('/blog-posts/:id/seo-score', calculatePostSeoScore);
+
+// Blog categories
+router.get('/blog/categories', getCategories);
+router.get('/blog/categories/:id', getCategory);
+router.post('/blog/categories', createCategory);
+router.put('/blog/categories/:id', updateCategory);
+router.delete('/blog/categories/:id', deleteCategory);
+
+// Blog tags
+router.get('/blog/tags', getTags);
+router.get('/blog/tags/:id', getTag);
+router.post('/blog/tags', createTag);
+router.put('/blog/tags/:id', updateTag);
+router.delete('/blog/tags/:id', deleteTag);
+router.post('/blog/tags/merge', mergeTags);
+
+// SEO Settings & Tools
+router.get('/seo/settings', getSeoSettings);
+router.put('/seo/settings', updateSeoSettings);
+router.post('/seo/validate-schema', validateSchema);
+router.get('/seo/preview/:type/:id', previewSeo);
 
 export default router;

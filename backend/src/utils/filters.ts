@@ -107,10 +107,50 @@ export function buildBlogPostWhereClause(filters: BlogPostFilterParams): Prisma.
     };
   }
 
-  if (filters.tag) {
-    where.tags = {
-      has: filters.tag,
+  if (filters.categoryId) {
+    where.categories = {
+      some: {
+        categoryId: filters.categoryId,
+      },
     };
+  }
+
+  if (filters.categorySlug) {
+    where.categories = {
+      some: {
+        category: {
+          slug: filters.categorySlug,
+        },
+      },
+    };
+  }
+
+  if (filters.tagId) {
+    where.tags = {
+      some: {
+        tagId: filters.tagId,
+      },
+    };
+  }
+
+  if (filters.tagSlug) {
+    where.tags = {
+      some: {
+        tag: {
+          slug: filters.tagSlug,
+        },
+      },
+    };
+  }
+
+  if (filters.dateFrom || filters.dateTo) {
+    where.publishedAt = {};
+    if (filters.dateFrom) {
+      where.publishedAt.gte = filters.dateFrom;
+    }
+    if (filters.dateTo) {
+      where.publishedAt.lte = filters.dateTo;
+    }
   }
 
   if (filters.search) {
@@ -118,7 +158,6 @@ export function buildBlogPostWhereClause(filters: BlogPostFilterParams): Prisma.
       { title: { contains: filters.search, mode: 'insensitive' } },
       { excerpt: { contains: filters.search, mode: 'insensitive' } },
       { content: { contains: filters.search, mode: 'insensitive' } },
-      { tags: { has: filters.search } },
     ];
   }
 

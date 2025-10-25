@@ -16,6 +16,7 @@ import {
   paginationSchema,
 } from '@/utils/validation';
 import { buildBlogPostWhereClause } from '@/utils/filters';
+import { getWordCount, getReadingTime } from '@/utils/markdown';
 
 export const getBlogPosts = asyncHandler(async (req: Request, res: Response) => {
   const paginationParams = paginationSchema.parse(req.query);
@@ -58,6 +59,11 @@ export const getBlogPosts = asyncHandler(async (req: Request, res: Response) => 
         categories: {
           include: {
             category: true,
+          },
+        },
+        tags: {
+          include: {
+            tag: true,
           },
         },
         featuredImage: {
@@ -120,6 +126,11 @@ export const getBlogPost = asyncHandler(async (req: Request, res: Response) => {
           category: true,
         },
       },
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
       files: {
         select: {
           id: true,
@@ -157,7 +168,7 @@ export const getBlogPost = asyncHandler(async (req: Request, res: Response) => {
 
 export const createBlogPost = asyncHandler(async (req: Request, res: Response) => {
   const payload = createBlogPostSchema.parse(req.body);
-  const { categoryIds, featuredImageId, ...blogPostData } = payload;
+  const { categoryIds, tagIds, featuredImageId, scheduledFor, ...blogPostData } = payload;
 
   const existingSlug = await prisma.blogPost.findUnique({
     where: { slug: payload.slug },
@@ -187,6 +198,16 @@ export const createBlogPost = asyncHandler(async (req: Request, res: Response) =
     }
   }
 
+  if (tagIds && tagIds.length > 0) {
+    const tags = await prisma.tag.findMany({
+      where: { id: { in: tagIds } },
+    });
+
+    if (tags.length !== tagIds.length) {
+      throw new AppError('One or more tags not found', StatusCodes.NOT_FOUND);
+    }
+  }
+
   if (featuredImageId) {
     const featuredImage = await prisma.file.findUnique({
       where: { id: featuredImageId },
@@ -197,9 +218,15 @@ export const createBlogPost = asyncHandler(async (req: Request, res: Response) =
     }
   }
 
+  const wordCount = payload.wordCount ?? getWordCount(payload.content);
+  const readingTime = payload.readingTime ?? getReadingTime(wordCount);
+
   const blogPost = await prisma.blogPost.create({
     data: {
       ...blogPostData,
+      wordCount,
+      readingTime,
+      scheduledFor: scheduledFor ? new Date(scheduledFor) : null,
       authorId: req.user!.id,
       featuredImageId,
       categories: categoryIds
@@ -207,6 +234,15 @@ export const createBlogPost = asyncHandler(async (req: Request, res: Response) =
             create: categoryIds.map((categoryId) => ({
               category: {
                 connect: { id: categoryId },
+              },
+            })),
+          }
+        : undefined,
+      tags: tagIds
+        ? {
+            create: tagIds.map((tagId) => ({
+              tag: {
+                connect: { id: tagId },
               },
             })),
           }
@@ -239,6 +275,11 @@ export const createBlogPost = asyncHandler(async (req: Request, res: Response) =
           category: true,
         },
       },
+      tags: {
+        include: {
+          tag: true,
+        },
+      },
       featuredImage: {
         select: {
           id: true,
@@ -269,7 +310,7 @@ export const createBlogPost = asyncHandler(async (req: Request, res: Response) =
 export const updateBlogPost = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   const payload = updateBlogPostSchema.parse(req.body);
-  const { categoryIds, featuredImageId, ...blogPostData } = payload;
+  const { categoryIds, tagIds, featuredImageId, scheduledFor, ...blogPostData } = payload;
 
   const existingBlogPost = await prisma.blogPost.findUnique({
     where: { id },
@@ -319,6 +360,22 @@ export const updateBlogPost = asyncHandler(async (req: Request, res: Response) =
     });
   }
 
+  if (tagIds !== undefined) {
+    if (tagIds.length > 0) {
+      const tags = await prisma.tag.findMany({
+        where: { id: { in: tagIds } },
+      });
+
+      if (tags.length !== tagIds.length) {
+        throw new AppError('One or more tags not found', StatusCodes.NOT_FOUND);
+      }
+    }
+
+    await prisma.blogPostTag.deleteMany({
+      where: { blogPostId: id },
+    });
+  }
+
   if (featuredImageId !== undefined && featuredImageId !== null) {
     const featuredImage = await prisma.file.findUnique({
       where: { id: featuredImageId },
@@ -329,8 +386,17 @@ export const updateBlogPost = asyncHandler(async (req: Request, res: Response) =
     }
   }
 
+  const updatedWordCount = blogPostData.content
+    ? getWordCount(blogPostData.content)
+    : payload.wordCount ?? existingBlogPost.wordCount;
+  const updatedReadingTime = blogPostData.content
+    ? getReadingTime(updatedWordCount ?? 0)
+    : payload.readingTime ?? existingBlogPost.readingTime;
+
   const updateData: Record<string, unknown> = {
     ...blogPostData,
+    wordCount: updatedWordCount ?? existingBlogPost.wordCount,
+    readingTime: updatedReadingTime ?? existingBlogPost.readingTime,
     categories:
       categoryIds !== undefined
         ? {
@@ -341,10 +407,24 @@ export const updateBlogPost = asyncHandler(async (req: Request, res: Response) =
             })),
           }
         : undefined,
+    tags:
+      tagIds !== undefined
+        ? {
+            create: tagIds.map((tagId) => ({
+              tag: {
+                connect: { id: tagId },
+              },
+            })),
+          }
+        : undefined,
   };
 
   if (featuredImageId !== undefined) {
     updateData.featuredImageId = featuredImageId;
+  }
+
+  if (scheduledFor !== undefined) {
+    updateData.scheduledFor = scheduledFor ? new Date(scheduledFor) : null;
   }
 
   const blogPost = await prisma.blogPost.update({
@@ -375,6 +455,11 @@ export const updateBlogPost = asyncHandler(async (req: Request, res: Response) =
       categories: {
         include: {
           category: true,
+        },
+      },
+      tags: {
+        include: {
+          tag: true,
         },
       },
       featuredImage: {
@@ -488,6 +573,11 @@ export const publishBlogPost = asyncHandler(async (req: Request, res: Response) 
       categories: {
         include: {
           category: true,
+        },
+      },
+      tags: {
+        include: {
+          tag: true,
         },
       },
       featuredImage: {

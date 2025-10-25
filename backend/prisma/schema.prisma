@@ -265,35 +265,60 @@ model QuizSubmission {
 }
 
 model BlogPost {
-  id             String        @id @default(cuid())
-  authorId       String
-  instructorId   String?
-  title          String
-  slug           String        @unique
-  excerpt        String?
-  content        String        @db.Text
-  status         ContentStatus @default(DRAFT)
-  featured       Boolean       @default(false)
-  publishedAt    DateTime?
-  tags           String[]      @default([])
-  seoTitle       String?
-  seoDescription String?
-  seoKeywords    String[]      @default([])
-  canonicalUrl   String?
-  featuredImageId String?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id                  String        @id @default(cuid())
+  authorId            String
+  instructorId        String?
+  title               String
+  slug                String        @unique
+  excerpt             String?
+  content             String        @db.Text
+  status              ContentStatus @default(DRAFT)
+  featured            Boolean       @default(false)
+  publishedAt         DateTime?
+  scheduledFor        DateTime?
+  featuredImageAlt    String?
+  
+  // SEO Fields
+  seoTitle            String?
+  metaDescription     String?
+  keywords            String[]      @default([])
+  canonicalUrl        String?
+  
+  // Open Graph
+  ogTitle             String?
+  ogDescription       String?
+  ogImage             String?
+  
+  // Twitter Card
+  twitterTitle        String?
+  twitterDescription  String?
+  twitterImage        String?
+  
+  // Schema.org
+  schemaJson          Json?
+  
+  // Metadata
+  viewCount           Int           @default(0)
+  readingTime         Int?
+  wordCount           Int?
+  commentsEnabled     Boolean       @default(true)
+  featuredImageId     String?
+  
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
 
-  author         User               @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
-  instructor     Instructor?        @relation("InstructorPosts", fields: [instructorId], references: [id], onDelete: SetNull)
-  categories     BlogPostCategory[]
-  files          File[]             @relation("BlogPostFiles")
-  featuredImage  File?              @relation("BlogPostFeaturedImage", fields: [featuredImageId], references: [id], onDelete: SetNull)
+  author              User               @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
+  instructor          Instructor?        @relation("InstructorPosts", fields: [instructorId], references: [id], onDelete: SetNull)
+  categories          BlogPostCategory[]
+  tags                BlogPostTag[]
+  files               File[]             @relation("BlogPostFiles")
+  featuredImage       File?              @relation("BlogPostFeaturedImage", fields: [featuredImageId], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([featured])
   @@index([authorId])
   @@index([instructorId])
+  @@index([scheduledFor])
 }
 
 model RefreshToken {
@@ -330,6 +355,26 @@ model AuditLog {
 }
 
 model Category {
+  id             String   @id @default(cuid())
+  name           String   @unique
+  slug           String   @unique
+  description    String?  @db.Text
+  parentId       String?
+  image          String?
+  seoTitle       String?
+  seoDescription String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  parent             Category?          @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children           Category[]         @relation("CategoryHierarchy")
+  courseCategories   CourseCategory[]
+  blogPostCategories BlogPostCategory[]
+
+  @@index([parentId])
+}
+
+model Tag {
   id          String   @id @default(cuid())
   name        String   @unique
   slug        String   @unique
@@ -337,8 +382,7 @@ model Category {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  courseCategories   CourseCategory[]
-  blogPostCategories BlogPostCategory[]
+  blogPosts BlogPostTag[]
 }
 
 model CourseCategory {
@@ -363,6 +407,18 @@ model BlogPostCategory {
 
   @@id([blogPostId, categoryId])
   @@index([categoryId])
+}
+
+model BlogPostTag {
+  blogPostId String
+  tagId      String
+  assignedAt DateTime @default(now())
+
+  blogPost BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  tag      Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([blogPostId, tagId])
+  @@index([tagId])
 }
 
 model File {
@@ -406,4 +462,19 @@ model File {
   @@index([category])
   @@index([visibility])
   @@index([expiresAt])
+}
+
+model SeoSettings {
+  id                  String   @id @default(cuid())
+  siteTitle           String
+  siteDescription     String   @db.Text
+  defaultKeywords     String[] @default([])
+  defaultOgImage      String?
+  twitterHandle       String?
+  facebookAppId       String?
+  organizationSchema  Json?
+  fallbackContent     String?  @db.Text
+  robotsTxt           String?  @db.Text
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }
