@@ -177,38 +177,62 @@ export const enrollmentFilterSchema = z.object({
 // Blog post validation schemas
 export const createBlogPostSchema = z
   .object({
-    title: z.string().min(1).max(255),
+    title: z.string().min(1).max(200),
     slug: z.string().min(1).max(255).regex(/^[a-z0-9-]+$/),
-    excerpt: z.string().max(500).optional(),
+    excerpt: z.string().max(300).optional(),
     content: z.string().min(1),
     status: z.nativeEnum(ContentStatus).default(ContentStatus.DRAFT),
     featured: z.boolean().default(false),
-    tags: z.array(z.string()).default([]),
-    seoTitle: z.string().max(255).optional(),
-    seoDescription: z.string().max(500).optional(),
-    seoKeywords: z.array(z.string()).default([]),
+    scheduledFor: z.string().datetime().optional(),
+    featuredImageAlt: z.string().optional(),
+    seoTitle: z.string().max(70).optional(),
+    metaDescription: z.string().max(160).optional(),
+    keywords: z.array(z.string()).default([]),
     canonicalUrl: z.string().url().optional(),
+    ogTitle: z.string().max(70).optional(),
+    ogDescription: z.string().max(160).optional(),
+    ogImage: z.string().url().optional(),
+    twitterTitle: z.string().max(70).optional(),
+    twitterDescription: z.string().max(160).optional(),
+    twitterImage: z.string().url().optional(),
+    schemaJson: z.record(z.unknown()).optional(),
+    readingTime: z.number().int().positive().optional(),
+    wordCount: z.number().int().nonnegative().optional(),
+    commentsEnabled: z.boolean().default(true),
     instructorId: z.string().cuid().optional(),
     categoryIds: z.array(z.string().cuid()).optional(),
+    tagIds: z.array(z.string().cuid()).optional(),
     featuredImageId: z.string().cuid().optional(),
   })
   .strict();
 
 export const updateBlogPostSchema = z
   .object({
-    title: z.string().min(1).max(255).optional(),
+    title: z.string().min(1).max(200).optional(),
     slug: z.string().min(1).max(255).regex(/^[a-z0-9-]+$/).optional(),
-    excerpt: z.string().max(500).optional(),
+    excerpt: z.string().max(300).optional().nullable(),
     content: z.string().min(1).optional(),
     status: z.nativeEnum(ContentStatus).optional(),
     featured: z.boolean().optional(),
-    tags: z.array(z.string()).optional(),
-    seoTitle: z.string().max(255).optional().nullable(),
-    seoDescription: z.string().max(500).optional().nullable(),
-    seoKeywords: z.array(z.string()).optional(),
+    scheduledFor: z.string().datetime().optional().nullable(),
+    featuredImageAlt: z.string().optional().nullable(),
+    seoTitle: z.string().max(70).optional().nullable(),
+    metaDescription: z.string().max(160).optional().nullable(),
+    keywords: z.array(z.string()).optional(),
     canonicalUrl: z.string().url().optional().nullable(),
+    ogTitle: z.string().max(70).optional().nullable(),
+    ogDescription: z.string().max(160).optional().nullable(),
+    ogImage: z.string().url().optional().nullable(),
+    twitterTitle: z.string().max(70).optional().nullable(),
+    twitterDescription: z.string().max(160).optional().nullable(),
+    twitterImage: z.string().url().optional().nullable(),
+    schemaJson: z.record(z.unknown()).optional().nullable(),
+    readingTime: z.number().int().positive().optional().nullable(),
+    wordCount: z.number().int().nonnegative().optional().nullable(),
+    commentsEnabled: z.boolean().optional(),
     instructorId: z.string().cuid().optional().nullable(),
     categoryIds: z.array(z.string().cuid()).optional(),
+    tagIds: z.array(z.string().cuid()).optional(),
     featuredImageId: z.string().cuid().optional().nullable(),
   })
   .strict();
@@ -241,9 +265,13 @@ export const blogPostFilterSchema = z.object({
     }, z.boolean().optional()),
   authorId: z.string().cuid().optional(),
   instructorId: z.string().cuid().optional(),
-  category: z.string().min(1).optional(),
-  tag: z.string().min(1).optional(),
+  categoryId: z.string().cuid().optional(),
+  categorySlug: z.string().min(1).optional(),
+  tagId: z.string().cuid().optional(),
+  tagSlug: z.string().min(1).optional(),
   search: z.string().optional(),
+  dateFrom: z.coerce.date().optional(),
+  dateTo: z.coerce.date().optional(),
 });
 
 export const blogPostSortFields = ['createdAt', 'updatedAt', 'title', 'publishedAt'] as const;
@@ -257,6 +285,70 @@ export const blogPostSortSchema = z.object({
 export const updateInstructorAvatarSchema = z
   .object({
     avatarUrl: z.string().url(),
+  })
+  .strict();
+
+// Category validation schemas
+export const createCategorySchema = z
+  .object({
+    name: z.string().min(1).max(255),
+    slug: z.string().min(1).max(255).regex(/^[a-z0-9-]+$/),
+    description: z.string().optional(),
+    parentId: z.string().cuid().optional().nullable(),
+    image: z.string().url().optional(),
+    seoTitle: z.string().max(70).optional(),
+    seoDescription: z.string().max(160).optional(),
+  })
+  .strict();
+
+export const updateCategorySchema = z
+  .object({
+    name: z.string().min(1).max(255).optional(),
+    slug: z.string().min(1).max(255).regex(/^[a-z0-9-]+$/).optional(),
+    description: z.string().optional().nullable(),
+    parentId: z.string().cuid().optional().nullable(),
+    image: z.string().url().optional().nullable(),
+    seoTitle: z.string().max(70).optional().nullable(),
+    seoDescription: z.string().max(160).optional().nullable(),
+  })
+  .strict();
+
+// Tag validation schemas
+export const createTagSchema = z
+  .object({
+    name: z.string().min(1).max(100),
+    slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/),
+    description: z.string().optional(),
+  })
+  .strict();
+
+export const updateTagSchema = z
+  .object({
+    name: z.string().min(1).max(100).optional(),
+    slug: z.string().min(1).max(100).regex(/^[a-z0-9-]+$/).optional(),
+    description: z.string().optional().nullable(),
+  })
+  .strict();
+
+export const mergeTagsSchema = z
+  .object({
+    sourceTagIds: z.array(z.string().cuid()).min(1),
+    targetTagId: z.string().cuid(),
+  })
+  .strict();
+
+// SEO Settings validation schemas
+export const updateSEOSettingsSchema = z
+  .object({
+    siteTitle: z.string().min(1).max(255),
+    siteDescription: z.string().min(1),
+    defaultKeywords: z.array(z.string()).default([]),
+    defaultOgImage: z.string().url().optional().nullable(),
+    twitterHandle: z.string().optional().nullable(),
+    facebookAppId: z.string().optional().nullable(),
+    organizationSchema: z.record(z.unknown()).optional().nullable(),
+    fallbackContent: z.string().optional().nullable(),
+    robotsTxt: z.string().optional().nullable(),
   })
   .strict();
 
@@ -280,3 +372,9 @@ export type CreateBlogPostInput = z.infer<typeof createBlogPostSchema>;
 export type UpdateBlogPostInput = z.infer<typeof updateBlogPostSchema>;
 export type BlogPostFilterParams = z.infer<typeof blogPostFilterSchema>;
 export type BlogPostSortParams = z.infer<typeof blogPostSortSchema>;
+export type CreateCategoryInput = z.infer<typeof createCategorySchema>;
+export type UpdateCategoryInput = z.infer<typeof updateCategorySchema>;
+export type CreateTagInput = z.infer<typeof createTagSchema>;
+export type UpdateTagInput = z.infer<typeof updateTagSchema>;
+export type MergeTagsInput = z.infer<typeof mergeTagsSchema>;
+export type UpdateSeoSettingsInput = z.infer<typeof updateSEOSettingsSchema>;
