@@ -7,7 +7,7 @@ import { AppError } from '@/middleware/errorHandler';
 import { auditLogger } from '@/utils/auditLogger';
 import { getRequestContext } from '@/utils/request';
 import { buildPaginatedResult, getPaginationSkip } from '@/utils/pagination';
-import { paginationSchema } from '@/utils/validation';
+import { paginationSchema, updateInstructorAvatarSchema } from '@/utils/validation';
 
 const createInstructorSchema = z
   .object({
@@ -103,6 +103,19 @@ export const getInstructor = asyncHandler(async (req: Request, res: Response) =>
               sections: true,
             },
           },
+        },
+        orderBy: { createdAt: 'desc' },
+      },
+      blogPosts: {
+        select: {
+          id: true,
+          title: true,
+          slug: true,
+          status: true,
+          featured: true,
+          publishedAt: true,
+          tags: true,
+          createdAt: true,
         },
         orderBy: { createdAt: 'desc' },
       },
@@ -260,5 +273,137 @@ export const deleteInstructor = asyncHandler(async (req: Request, res: Response)
   res.status(StatusCodes.OK).json({
     success: true,
     message: 'Instructor deleted successfully',
+  });
+});
+
+export const updateInstructorAvatar = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { avatarUrl } = updateInstructorAvatarSchema.parse(req.body);
+
+  const instructor = await prisma.instructor.findUnique({
+    where: { id },
+  });
+
+  if (!instructor) {
+    throw new AppError('Instructor not found', StatusCodes.NOT_FOUND);
+  }
+
+  await prisma.user.update({
+    where: { id: instructor.userId },
+    data: { avatarUrl },
+  });
+
+  const updatedInstructor = await prisma.instructor.findUnique({
+    where: { id },
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          avatarUrl: true,
+          role: true,
+          isActive: true,
+        },
+      },
+      _count: {
+        select: {
+          courses: true,
+          blogPosts: true,
+        },
+      },
+    },
+  });
+
+  await auditLogger.log({
+    action: 'admin.instructor.update-avatar',
+    entity: 'instructor',
+    userId: req.user?.id,
+    metadata: { instructorId: id, avatarUrl },
+    ...getRequestContext(req),
+  });
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: 'Instructor avatar updated successfully',
+    data: updatedInstructor,
+  });
+});
+
+export const assignInstructorToBlogPost = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { blogPostId } = z.object({ blogPostId: z.string().cuid() }).strict().parse(req.body);
+
+  const instructor = await prisma.instructor.findUnique({
+    where: { id },
+  });
+
+  if (!instructor) {
+    throw new AppError('Instructor not found', StatusCodes.NOT_FOUND);
+  }
+
+  const blogPost = await prisma.blogPost.findUnique({
+    where: { id: blogPostId },
+  });
+
+  if (!blogPost) {
+    throw new AppError('Blog post not found', StatusCodes.NOT_FOUND);
+  }
+
+  const updatedBlogPost = await prisma.blogPost.update({
+    where: { id: blogPostId },
+    data: { instructorId: id },
+    include: {
+      author: {
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          avatarUrl: true,
+        },
+      },
+      instructor: {
+        include: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+              avatarUrl: true,
+            },
+          },
+        },
+      },
+      categories: {
+        include: {
+          category: true,
+        },
+      },
+      featuredImage: {
+        select: {
+          id: true,
+          originalFilename: true,
+          mimeType: true,
+          url: true,
+          visibility: true,
+        },
+      },
+    },
+  });
+
+  await auditLogger.log({
+    action: 'admin.instructor.assign-blog-post',
+    entity: 'instructor',
+    userId: req.user?.id,
+    metadata: { instructorId: id, blogPostId },
+    ...getRequestContext(req),
+  });
+
+  res.status(StatusCodes.OK).json({
+    success: true,
+    message: 'Instructor assigned to blog post successfully',
+    data: updatedBlogPost,
   });
 });
