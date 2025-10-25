@@ -28,6 +28,14 @@ import {
   updateInstructor,
   deleteInstructor,
 } from '@/controllers/adminInstructorController';
+import {
+  getEnrollments,
+  getEnrollment,
+  createEnrollment,
+  updateEnrollment,
+  deleteEnrollment,
+  getEnrollmentStats,
+} from '@/controllers/adminEnrollmentController';
 
 const router = Router();
 
@@ -56,6 +64,14 @@ router.delete('/courses/:courseId/sections/:sectionId/lessons/:lessonId', delete
 router.post('/courses/:courseId/sections/:sectionId/lessons/:lessonId/quiz', upsertQuiz);
 router.patch('/courses/:courseId/sections/:sectionId/lessons/:lessonId/quiz', updateQuiz);
 router.delete('/courses/:courseId/sections/:sectionId/lessons/:lessonId/quiz', deleteQuiz);
+
+// Enrollments
+router.get('/enrollments', getEnrollments);
+router.get('/enrollments/stats', getEnrollmentStats);
+router.get('/enrollments/:id', getEnrollment);
+router.post('/enrollments', createEnrollment);
+router.patch('/enrollments/:id', updateEnrollment);
+router.delete('/enrollments/:id', deleteEnrollment);
 
 // Instructors
 router.get('/instructors', getInstructors);

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { CourseStatus, ContentStatus, LessonType, CourseLevel } from '@prisma/client';
+import { CourseStatus, ContentStatus, LessonType, CourseLevel, EnrollmentStatus } from '@prisma/client';
 
 // Pagination and filtering schemas
 export const paginationSchema = z.object({
@@ -11,6 +11,13 @@ export const courseSortFields = ['createdAt', 'updatedAt', 'title', 'publishedAt
 
 export const sortSchema = z.object({
   sortBy: z.enum(courseSortFields).optional(),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+});
+
+export const enrollmentSortFields = ['enrolledAt', 'completedAt', 'progress'] as const;
+
+export const enrollmentSortSchema = z.object({
+  sortBy: z.enum(enrollmentSortFields).optional(),
   sortOrder: z.enum(['asc', 'desc']).default('desc'),
 });
 
@@ -145,9 +152,32 @@ export const assignInstructorSchema = z
   })
   .strict();
 
+// Enrollment validation schemas
+export const createEnrollmentSchema = z
+  .object({
+    userId: z.string().cuid(),
+    courseId: z.string().cuid(),
+    status: z.nativeEnum(EnrollmentStatus).optional(),
+  })
+  .strict();
+
+export const updateEnrollmentSchema = z
+  .object({
+    status: z.nativeEnum(EnrollmentStatus),
+  })
+  .strict();
+
+export const enrollmentFilterSchema = z.object({
+  status: z.nativeEnum(EnrollmentStatus).optional(),
+  userId: z.string().cuid().optional(),
+  courseId: z.string().cuid().optional(),
+  search: z.string().optional(),
+});
+
 // Types
 export type PaginationParams = z.infer<typeof paginationSchema>;
 export type SortParams = z.infer<typeof sortSchema>;
+export type EnrollmentSortParams = z.infer<typeof enrollmentSortSchema>;
 export type CreateCourseInput = z.infer<typeof createCourseSchema>;
 export type UpdateCourseInput = z.infer<typeof updateCourseSchema>;
 export type CourseFilterParams = z.infer<typeof courseFilterSchema>;
@@ -157,3 +187,6 @@ export type CreateLessonInput = z.infer<typeof createLessonSchema>;
 export type UpdateLessonInput = z.infer<typeof updateLessonSchema>;
 export type CreateQuizInput = z.infer<typeof createQuizSchema>;
 export type UpdateQuizInput = z.infer<typeof updateQuizSchema>;
+export type CreateEnrollmentInput = z.infer<typeof createEnrollmentSchema>;
+export type UpdateEnrollmentInput = z.infer<typeof updateEnrollmentSchema>;
+export type EnrollmentFilterParams = z.infer<typeof enrollmentFilterSchema>;
