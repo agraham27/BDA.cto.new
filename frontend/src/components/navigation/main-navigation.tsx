@@ -11,16 +11,20 @@ const navItems = [
     path: '',
   },
   {
+    key: 'courses',
+    path: '/courses',
+  },
+  {
+    key: 'instructors',
+    path: '/instructors',
+  },
+  {
+    key: 'blog',
+    path: '/blog',
+  },
+  {
     key: 'about',
     path: '/about',
-  },
-  {
-    key: 'students',
-    path: '/student',
-  },
-  {
-    key: 'admin',
-    path: '/admin',
   },
 ];
 

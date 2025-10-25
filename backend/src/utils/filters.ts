@@ -16,6 +16,16 @@ export function buildCourseWhereClause(filters: CourseFilterParams): Prisma.Cour
     where.instructorId = filters.instructorId;
   }
 
+  if (filters.category) {
+    where.categories = {
+      some: {
+        category: {
+          slug: filters.category,
+        },
+      },
+    };
+  }
+
   if (filters.search) {
     where.OR = [
       { title: { contains: filters.search, mode: 'insensitive' } },
