@@ -6,6 +6,7 @@ import adminRoutes from '@/routes/admin';
 import studentRoutes from '@/routes/student';
 import uploadRoutes from '@/routes/upload';
 import streamRoutes from '@/routes/stream';
+import publicRoutes from '@/routes/public';
 
 const router = Router();
 
@@ -31,5 +32,6 @@ router.use('/api/admin', adminRoutes);
 router.use('/api/student', studentRoutes);
 router.use('/api/uploads', uploadRoutes);
 router.use('/api/stream', streamRoutes);
+router.use('/api/public', publicRoutes);
 
 export default router;

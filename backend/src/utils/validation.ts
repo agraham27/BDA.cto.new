@@ -49,6 +49,7 @@ export const courseFilterSchema = z.object({
   status: z.nativeEnum(CourseStatus).optional(),
   level: z.nativeEnum(CourseLevel).optional(),
   instructorId: z.string().cuid().optional(),
+  category: z.string().min(1).optional(),
   search: z.string().optional(),
 });
 

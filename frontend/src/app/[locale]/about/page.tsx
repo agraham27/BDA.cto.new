@@ -1,6 +1,20 @@
+import { Metadata } from 'next';
 import { getTranslations } from 'next-intl/server';
 
 import { Card, CardContent } from '@/components/ui/card';
+
+export async function generateMetadata({
+  params: { locale },
+}: {
+  params: { locale: string };
+}): Promise<Metadata> {
+  const t = await getTranslations({ locale, namespace: 'navigation' });
+
+  return {
+    title: t('about'),
+    description: 'Learn about Big Dipper Academy, our mission, and our commitment to excellence in education.',
+  };
+}
 
 export default async function AboutPage({ params: { locale } }: { params: { locale: string } }) {
   const t = await getTranslations({ locale, namespace: 'navigation' });
