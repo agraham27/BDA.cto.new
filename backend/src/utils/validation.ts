@@ -174,6 +174,92 @@ export const enrollmentFilterSchema = z.object({
   search: z.string().optional(),
 });
 
+// Blog post validation schemas
+export const createBlogPostSchema = z
+  .object({
+    title: z.string().min(1).max(255),
+    slug: z.string().min(1).max(255).regex(/^[a-z0-9-]+$/),
+    excerpt: z.string().max(500).optional(),
+    content: z.string().min(1),
+    status: z.nativeEnum(ContentStatus).default(ContentStatus.DRAFT),
+    featured: z.boolean().default(false),
+    tags: z.array(z.string()).default([]),
+    seoTitle: z.string().max(255).optional(),
+    seoDescription: z.string().max(500).optional(),
+    seoKeywords: z.array(z.string()).default([]),
+    canonicalUrl: z.string().url().optional(),
+    instructorId: z.string().cuid().optional(),
+    categoryIds: z.array(z.string().cuid()).optional(),
+    featuredImageId: z.string().cuid().optional(),
+  })
+  .strict();
+
+export const updateBlogPostSchema = z
+  .object({
+    title: z.string().min(1).max(255).optional(),
+    slug: z.string().min(1).max(255).regex(/^[a-z0-9-]+$/).optional(),
+    excerpt: z.string().max(500).optional(),
+    content: z.string().min(1).optional(),
+    status: z.nativeEnum(ContentStatus).optional(),
+    featured: z.boolean().optional(),
+    tags: z.array(z.string()).optional(),
+    seoTitle: z.string().max(255).optional().nullable(),
+    seoDescription: z.string().max(500).optional().nullable(),
+    seoKeywords: z.array(z.string()).optional(),
+    canonicalUrl: z.string().url().optional().nullable(),
+    instructorId: z.string().cuid().optional().nullable(),
+    categoryIds: z.array(z.string().cuid()).optional(),
+    featuredImageId: z.string().cuid().optional().nullable(),
+  })
+  .strict();
+
+export const publishBlogPostSchema = z
+  .object({
+    publish: z.boolean(),
+  })
+  .strict();
+
+export const blogPostFilterSchema = z.object({
+  status: z.nativeEnum(ContentStatus).optional(),
+  featured: z
+    .preprocess((value) => {
+      if (typeof value === 'string') {
+        if (value.toLowerCase() === 'true') {
+          return true;
+        }
+        if (value.toLowerCase() === 'false') {
+          return false;
+        }
+        return undefined;
+      }
+
+      if (typeof value === 'boolean') {
+        return value;
+      }
+
+      return undefined;
+    }, z.boolean().optional()),
+  authorId: z.string().cuid().optional(),
+  instructorId: z.string().cuid().optional(),
+  category: z.string().min(1).optional(),
+  tag: z.string().min(1).optional(),
+  search: z.string().optional(),
+});
+
+export const blogPostSortFields = ['createdAt', 'updatedAt', 'title', 'publishedAt'] as const;
+
+export const blogPostSortSchema = z.object({
+  sortBy: z.enum(blogPostSortFields).optional(),
+  sortOrder: z.enum(['asc', 'desc']).default('desc'),
+});
+
+// Instructor avatar upload schema
+export const updateInstructorAvatarSchema = z
+  .object({
+    avatarUrl: z.string().url(),
+  })
+  .strict();
+
 // Types
 export type PaginationParams = z.infer<typeof paginationSchema>;
 export type SortParams = z.infer<typeof sortSchema>;
@@ -190,3 +276,7 @@ export type UpdateQuizInput = z.infer<typeof updateQuizSchema>;
 export type CreateEnrollmentInput = z.infer<typeof createEnrollmentSchema>;
 export type UpdateEnrollmentInput = z.infer<typeof updateEnrollmentSchema>;
 export type EnrollmentFilterParams = z.infer<typeof enrollmentFilterSchema>;
+export type CreateBlogPostInput = z.infer<typeof createBlogPostSchema>;
+export type UpdateBlogPostInput = z.infer<typeof updateBlogPostSchema>;
+export type BlogPostFilterParams = z.infer<typeof blogPostFilterSchema>;
+export type BlogPostSortParams = z.infer<typeof blogPostSortSchema>;

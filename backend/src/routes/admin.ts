@@ -27,6 +27,8 @@ import {
   createInstructor,
   updateInstructor,
   deleteInstructor,
+  updateInstructorAvatar,
+  assignInstructorToBlogPost,
 } from '@/controllers/adminInstructorController';
 import {
   getEnrollments,
@@ -36,6 +38,14 @@ import {
   deleteEnrollment,
   getEnrollmentStats,
 } from '@/controllers/adminEnrollmentController';
+import {
+  getBlogPosts,
+  getBlogPost,
+  createBlogPost,
+  updateBlogPost,
+  deleteBlogPost,
+  publishBlogPost,
+} from '@/controllers/adminBlogController';
 
 const router = Router();
 
@@ -78,6 +88,16 @@ router.get('/instructors', getInstructors);
 router.get('/instructors/:id', getInstructor);
 router.post('/instructors', createInstructor);
 router.patch('/instructors/:id', updateInstructor);
+router.patch('/instructors/:id/avatar', updateInstructorAvatar);
+router.post('/instructors/:id/blog-posts', assignInstructorToBlogPost);
 router.delete('/instructors/:id', deleteInstructor);
+
+// Blog posts
+router.get('/blog-posts', getBlogPosts);
+router.get('/blog-posts/:id', getBlogPost);
+router.post('/blog-posts', createBlogPost);
+router.patch('/blog-posts/:id', updateBlogPost);
+router.delete('/blog-posts/:id', deleteBlogPost);
+router.post('/blog-posts/:id/publish', publishBlogPost);
 
 export default router;

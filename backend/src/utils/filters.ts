@@ -1,5 +1,5 @@
 import { Prisma } from '@prisma/client';
-import { CourseFilterParams, EnrollmentFilterParams } from './validation';
+import { CourseFilterParams, EnrollmentFilterParams, BlogPostFilterParams } from './validation';
 
 export function buildCourseWhereClause(filters: CourseFilterParams): Prisma.CourseWhereInput {
   const where: Prisma.CourseWhereInput = {};
@@ -72,6 +72,53 @@ export function buildEnrollmentWhereClause(
           ],
         },
       },
+    ];
+  }
+
+  return where;
+}
+
+export function buildBlogPostWhereClause(filters: BlogPostFilterParams): Prisma.BlogPostWhereInput {
+  const where: Prisma.BlogPostWhereInput = {};
+
+  if (filters.status) {
+    where.status = filters.status;
+  }
+
+  if (typeof filters.featured === 'boolean') {
+    where.featured = filters.featured;
+  }
+
+  if (filters.authorId) {
+    where.authorId = filters.authorId;
+  }
+
+  if (filters.instructorId) {
+    where.instructorId = filters.instructorId;
+  }
+
+  if (filters.category) {
+    where.categories = {
+      some: {
+        category: {
+          slug: filters.category,
+        },
+      },
+    };
+  }
+
+  if (filters.tag) {
+    where.tags = {
+      has: filters.tag,
+    };
+  }
+
+  if (filters.search) {
+    where.OR = [
+      { title: { contains: filters.search, mode: 'insensitive' } },
+      { excerpt: { contains: filters.search, mode: 'insensitive' } },
+      { content: { contains: filters.search, mode: 'insensitive' } },
+      { tags: { has: filters.search } },
     ];
   }
 

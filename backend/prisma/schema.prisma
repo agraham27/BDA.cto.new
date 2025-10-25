@@ -265,24 +265,30 @@ model QuizSubmission {
 }
 
 model BlogPost {
-  id           String        @id @default(cuid())
-  authorId     String
-  instructorId String?
-  title        String
-  slug         String        @unique
-  excerpt      String?
-  content      String        @db.Text
-  status       ContentStatus @default(DRAFT)
-  featured     Boolean       @default(false)
-  publishedAt  DateTime?
-  tags         String[]      @default([])
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  id             String        @id @default(cuid())
+  authorId       String
+  instructorId   String?
+  title          String
+  slug           String        @unique
+  excerpt        String?
+  content        String        @db.Text
+  status         ContentStatus @default(DRAFT)
+  featured       Boolean       @default(false)
+  publishedAt    DateTime?
+  tags           String[]      @default([])
+  seoTitle       String?
+  seoDescription String?
+  seoKeywords    String[]      @default([])
+  canonicalUrl   String?
+  featuredImageId String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
-  author     User               @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
-  instructor Instructor?        @relation("InstructorPosts", fields: [instructorId], references: [id], onDelete: SetNull)
-  categories BlogPostCategory[]
-  files      File[]             @relation("BlogPostFiles")
+  author         User               @relation("UserPosts", fields: [authorId], references: [id], onDelete: Cascade)
+  instructor     Instructor?        @relation("InstructorPosts", fields: [instructorId], references: [id], onDelete: SetNull)
+  categories     BlogPostCategory[]
+  files          File[]             @relation("BlogPostFiles")
+  featuredImage  File?              @relation("BlogPostFeaturedImage", fields: [featuredImageId], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([featured])
@@ -387,10 +393,11 @@ model File {
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
-  uploader User?     @relation("UploadedFiles", fields: [uploaderId], references: [id], onDelete: SetNull)
-  course   Course?   @relation("CourseFiles", fields: [courseId], references: [id], onDelete: Cascade)
-  lesson   Lesson?   @relation("LessonFiles", fields: [lessonId], references: [id], onDelete: Cascade)
-  blogPost BlogPost? @relation("BlogPostFiles", fields: [blogPostId], references: [id], onDelete: Cascade)
+  uploader               User?      @relation("UploadedFiles", fields: [uploaderId], references: [id], onDelete: SetNull)
+  course                 Course?    @relation("CourseFiles", fields: [courseId], references: [id], onDelete: Cascade)
+  lesson                 Lesson?    @relation("LessonFiles", fields: [lessonId], references: [id], onDelete: Cascade)
+  blogPost               BlogPost?  @relation("BlogPostFiles", fields: [blogPostId], references: [id], onDelete: Cascade)
+  featuredInBlogPosts    BlogPost[] @relation("BlogPostFeaturedImage")
 
   @@index([courseId])
   @@index([lessonId])

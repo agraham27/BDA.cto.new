@@ -333,6 +333,15 @@ export const getPublicBlogPosts = asyncHandler(async (req: Request, res: Respons
             category: true,
           },
         },
+        featuredImage: {
+          select: {
+            id: true,
+            originalFilename: true,
+            mimeType: true,
+            url: true,
+            visibility: true,
+          },
+        },
       },
     }),
     prisma.blogPost.count({ where }),
@@ -378,6 +387,15 @@ export const getPublicBlogPost = asyncHandler(async (req: Request, res: Response
       categories: {
         include: {
           category: true,
+        },
+      },
+      featuredImage: {
+        select: {
+          id: true,
+          originalFilename: true,
+          mimeType: true,
+          url: true,
+          visibility: true,
         },
       },
     },
