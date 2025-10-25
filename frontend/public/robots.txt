@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /student/dashboard
+
+Sitemap: https://hocvienbigdipper.com/sitemap.xml
