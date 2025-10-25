@@ -82,10 +82,11 @@ model User {
   createdAt                       DateTime      @default(now())
   updatedAt                       DateTime      @updatedAt
 
-  instructor    Instructor?
-  enrollments   Enrollment[]
-  progresses    Progress[]
-  blogPosts     BlogPost[]   @relation("UserPosts")
+  instructor      Instructor?
+  enrollments     Enrollment[]
+  progresses      Progress[]
+  quizSubmissions QuizSubmission[]
+  blogPosts       BlogPost[]   @relation("UserPosts")
   uploadedFiles File[]       @relation("UploadedFiles")
   refreshTokens RefreshToken[]
   auditLogs     AuditLog[]
@@ -173,10 +174,11 @@ model Lesson {
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
-  section    Section    @relation(fields: [sectionId], references: [id], onDelete: Cascade)
-  quiz       Quiz?
-  progresses Progress[]
-  files      File[]     @relation("LessonFiles")
+  section         Section          @relation(fields: [sectionId], references: [id], onDelete: Cascade)
+  quiz            Quiz?
+  progresses      Progress[]
+  quizSubmissions QuizSubmission[]
+  files           File[]           @relation("LessonFiles")
 
   @@unique([sectionId, position])
   @@index([sectionId])
@@ -194,7 +196,8 @@ model Quiz {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  lesson      Lesson           @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  submissions QuizSubmission[]
 }
 
 model Enrollment {
@@ -206,9 +209,10 @@ model Enrollment {
   completedAt DateTime?
   progress    Float            @default(0)
 
-  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
-  course     Course     @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  progresses Progress[] @relation("EnrollmentProgress")
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course          Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progresses      Progress[]       @relation("EnrollmentProgress")
+  quizSubmissions QuizSubmission[]
 
   @@unique([userId, courseId])
   @@index([courseId])
@@ -232,6 +236,32 @@ model Progress {
   @@unique([userId, lessonId])
   @@index([status])
   @@index([enrollmentId])
+}
+
+model QuizSubmission {
+  id           String   @id @default(cuid())
+  userId       String
+  quizId       String
+  lessonId     String
+  enrollmentId String?
+  answers      Json
+  results      Json
+  score        Int
+  passed       Boolean
+  completedAt  DateTime @default(now())
+  timeSpent    Int?
+  createdAt    DateTime @default(now())
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz       Quiz        @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  lesson     Lesson      @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  enrollment Enrollment? @relation(fields: [enrollmentId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([quizId])
+  @@index([lessonId])
+  @@index([enrollmentId])
+  @@index([passed])
 }
 
 model BlogPost {

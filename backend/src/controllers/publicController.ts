@@ -7,6 +7,7 @@ import { AppError } from '@/middleware/errorHandler';
 import { buildPaginatedResult, getPaginationSkip } from '@/utils/pagination';
 import { paginationSchema, courseFilterSchema, sortSchema } from '@/utils/validation';
 import { buildCourseWhereClause } from '@/utils/filters';
+import { setCacheHeader } from '@/middleware/cache';
 
 export const getPublicCourses = asyncHandler(async (req: Request, res: Response) => {
   const paginationParams = paginationSchema.parse(req.query);
@@ -58,6 +59,8 @@ export const getPublicCourses = asyncHandler(async (req: Request, res: Response)
   ]);
 
   const result = buildPaginatedResult(courses, total, paginationParams);
+
+  setCacheHeader(res, { public: true, maxAge: 300, staleWhileRevalidate: 60 });
 
   res.status(StatusCodes.OK).json({
     success: true,
@@ -124,6 +127,8 @@ export const getPublicCourse = asyncHandler(async (req: Request, res: Response) 
     throw new AppError('Course not found', StatusCodes.NOT_FOUND);
   }
 
+  setCacheHeader(res, { public: true, maxAge: 600, staleWhileRevalidate: 120 });
+
   res.status(StatusCodes.OK).json({
     success: true,
     message: 'Course retrieved successfully',
@@ -182,6 +187,8 @@ export const getPublicInstructors = asyncHandler(async (req: Request, res: Respo
   ]);
 
   const result = buildPaginatedResult(instructors, total, paginationParams);
+
+  setCacheHeader(res, { public: true, maxAge: 300, staleWhileRevalidate: 60 });
 
   res.status(StatusCodes.OK).json({
     success: true,
@@ -254,6 +261,8 @@ export const getPublicInstructor = asyncHandler(async (req: Request, res: Respon
   if (!instructor || !instructor.user.isActive) {
     throw new AppError('Instructor not found', StatusCodes.NOT_FOUND);
   }
+
+  setCacheHeader(res, { public: true, maxAge: 600, staleWhileRevalidate: 120 });
 
   res.status(StatusCodes.OK).json({
     success: true,
@@ -331,6 +340,8 @@ export const getPublicBlogPosts = asyncHandler(async (req: Request, res: Respons
 
   const result = buildPaginatedResult(blogPosts, total, paginationParams);
 
+  setCacheHeader(res, { public: true, maxAge: 180, staleWhileRevalidate: 30 });
+
   res.status(StatusCodes.OK).json({
     success: true,
     message: 'Blog posts retrieved successfully',
@@ -376,6 +387,8 @@ export const getPublicBlogPost = asyncHandler(async (req: Request, res: Response
     throw new AppError('Blog post not found', StatusCodes.NOT_FOUND);
   }
 
+  setCacheHeader(res, { public: true, maxAge: 600, staleWhileRevalidate: 120 });
+
   res.status(StatusCodes.OK).json({
     success: true,
     message: 'Blog post retrieved successfully',
@@ -395,6 +408,8 @@ export const getPublicCategories = asyncHandler(async (req: Request, res: Respon
       },
     },
   });
+
+  setCacheHeader(res, { public: true, maxAge: 86400, staleWhileRevalidate: 3600 });
 
   res.status(StatusCodes.OK).json({
     success: true,

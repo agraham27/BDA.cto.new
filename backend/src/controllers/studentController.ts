@@ -1,9 +1,46 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { EnrollmentStatus, ProgressStatus } from '@prisma/client';
+import { EnrollmentStatus, ProgressStatus, Prisma } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { asyncHandler } from '@/utils/asyncHandler';
 import { AppError } from '@/middleware/errorHandler';
+import { setCacheHeader } from '@/middleware/cache';
+
+const recalculateEnrollmentProgress = async (
+  userId: string,
+  enrollmentId: string,
+  courseId: string
+) => {
+  const totalLessons = await prisma.lesson.count({
+    where: {
+      section: {
+        courseId,
+      },
+      status: 'PUBLISHED',
+    },
+  });
+
+  const completedLessons = await prisma.progress.count({
+    where: {
+      userId,
+      enrollmentId,
+      status: ProgressStatus.COMPLETED,
+    },
+  });
+
+  const progressPercentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
+
+  await prisma.enrollment.update({
+    where: { id: enrollmentId },
+    data: {
+      progress: progressPercentage,
+      completedAt: progressPercentage === 100 ? new Date() : null,
+      status: progressPercentage === 100 ? EnrollmentStatus.COMPLETED : EnrollmentStatus.ACTIVE,
+    },
+  });
+
+  return progressPercentage;
+};
 
 // GET /api/student/courses - Get enrolled courses
 export const getEnrolledCourses = asyncHandler(async (req: Request, res: Response) => {
@@ -110,6 +147,8 @@ export const getEnrolledCourses = asyncHandler(async (req: Request, res: Respons
     })
   );
 
+  setCacheHeader(res, { private: true, maxAge: 300, mustRevalidate: true });
+
   res.status(StatusCodes.OK).json({
     success: true,
     message: 'Enrolled courses retrieved successfully',
@@ -190,7 +229,24 @@ export const getCourseWithProgress = asyncHandler(async (req: Request, res: Resp
     },
   });
 
+  const quizSubmissions = await prisma.quizSubmission.findMany({
+    where: {
+      userId,
+      lessonId: { in: allLessonIds },
+    },
+    orderBy: {
+      completedAt: 'desc',
+    },
+  });
+
   const progressMap = new Map(progresses.map((p) => [p.lessonId, p]));
+  const latestQuizSubmissionMap = new Map<string, (typeof quizSubmissions)[number]>();
+
+  for (const submission of quizSubmissions) {
+    if (!latestQuizSubmissionMap.has(submission.lessonId)) {
+      latestQuizSubmissionMap.set(submission.lessonId, submission);
+    }
+  }
 
   // Transform data with progress info
   const sectionsWithProgress = course.sections.map((section) => ({
@@ -200,6 +256,7 @@ export const getCourseWithProgress = asyncHandler(async (req: Request, res: Resp
     position: section.position,
     lessons: section.lessons.map((lesson) => {
       const progress = progressMap.get(lesson.id);
+      const quizSubmission = latestQuizSubmissionMap.get(lesson.id);
       return {
         id: lesson.id,
         title: lesson.title,
@@ -212,6 +269,13 @@ export const getCourseWithProgress = asyncHandler(async (req: Request, res: Resp
         fileCount: lesson.files.length,
         isCompleted: progress?.status === ProgressStatus.COMPLETED,
         completedAt: progress?.completedAt,
+        quizSubmission: quizSubmission
+          ? {
+              score: quizSubmission.score,
+              passed: quizSubmission.passed,
+              completedAt: quizSubmission.completedAt,
+            }
+          : null,
       };
     }),
   }));
@@ -219,6 +283,8 @@ export const getCourseWithProgress = asyncHandler(async (req: Request, res: Resp
   const totalLessons = allLessonIds.length;
   const completedLessons = progresses.filter((p) => p.status === ProgressStatus.COMPLETED).length;
   const progress = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+
+  setCacheHeader(res, { private: true, maxAge: 300, mustRevalidate: true });
 
   res.status(StatusCodes.OK).json({
     success: true,
@@ -288,6 +354,18 @@ export const getLesson = asyncHandler(async (req: Request, res: Response) => {
     throw new AppError('Lesson not found', StatusCodes.NOT_FOUND);
   }
 
+  const latestQuizSubmission = lesson.quiz
+    ? await prisma.quizSubmission.findFirst({
+        where: {
+          userId,
+          quizId: lesson.quiz.id,
+        },
+        orderBy: {
+          completedAt: 'desc',
+        },
+      })
+    : null;
+
   // Get or create progress record
   let progress = await prisma.progress.findUnique({
     where: {
@@ -317,6 +395,8 @@ export const getLesson = asyncHandler(async (req: Request, res: Response) => {
       },
     });
   }
+
+  setCacheHeader(res, { private: true, maxAge: 120, mustRevalidate: true });
 
   res.status(StatusCodes.OK).json({
     success: true,
@@ -352,6 +432,14 @@ export const getLesson = asyncHandler(async (req: Request, res: Response) => {
         startedAt: progress.startedAt,
         completedAt: progress.completedAt,
       },
+      latestQuizSubmission: latestQuizSubmission
+        ? {
+            id: latestQuizSubmission.id,
+            score: latestQuizSubmission.score,
+            passed: latestQuizSubmission.passed,
+            completedAt: latestQuizSubmission.completedAt,
+          }
+        : null,
     },
   });
 });
@@ -414,34 +502,9 @@ export const markLessonComplete = asyncHandler(async (req: Request, res: Respons
     },
   });
 
-  // Update enrollment progress
-  const totalLessons = await prisma.lesson.count({
-    where: {
-      section: {
-        courseId,
-      },
-      status: 'PUBLISHED',
-    },
-  });
+  const progressPercentage = await recalculateEnrollmentProgress(userId, enrollment.id, courseId);
 
-  const completedLessons = await prisma.progress.count({
-    where: {
-      userId,
-      enrollmentId: enrollment.id,
-      status: ProgressStatus.COMPLETED,
-    },
-  });
-
-  const progressPercentage = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
-
-  await prisma.enrollment.update({
-    where: { id: enrollment.id },
-    data: {
-      progress: progressPercentage,
-      completedAt: progressPercentage === 100 ? new Date() : null,
-      status: progressPercentage === 100 ? EnrollmentStatus.COMPLETED : EnrollmentStatus.ACTIVE,
-    },
-  });
+  setCacheHeader(res, { noStore: true });
 
   res.status(StatusCodes.OK).json({
     success: true,
@@ -475,6 +538,8 @@ export const getProfile = asyncHandler(async (req: Request, res: Response) => {
     throw new AppError('User not found', StatusCodes.NOT_FOUND);
   }
 
+  setCacheHeader(res, { private: true, maxAge: 300, mustRevalidate: true });
+
   res.status(StatusCodes.OK).json({
     success: true,
     message: 'Profile retrieved successfully',
@@ -504,6 +569,8 @@ export const updateProfile = asyncHandler(async (req: Request, res: Response) =>
       createdAt: true,
     },
   });
+
+  setCacheHeader(res, { noStore: true });
 
   res.status(StatusCodes.OK).json({
     success: true,
@@ -551,6 +618,8 @@ export const getStats = asyncHandler(async (req: Request, res: Response) => {
   const completionRate =
     enrollmentsCount > 0 ? Math.round((completedCoursesCount / enrollmentsCount) * 100) : 0;
 
+  setCacheHeader(res, { private: true, maxAge: 300, mustRevalidate: true });
+
   res.status(StatusCodes.OK).json({
     success: true,
     message: 'Statistics retrieved successfully',
@@ -568,7 +637,7 @@ export const getStats = asyncHandler(async (req: Request, res: Response) => {
 // POST /api/student/quizzes/:id/submit - Submit quiz
 export const submitQuiz = asyncHandler(async (req: Request, res: Response) => {
   const { id: quizId } = req.params;
-  const { answers } = req.body;
+  const { answers, timeSpent } = req.body;
   const userId = req.user!.id;
 
   if (!answers || typeof answers !== 'object') {
@@ -594,7 +663,6 @@ export const submitQuiz = asyncHandler(async (req: Request, res: Response) => {
     throw new AppError('Quiz not found', StatusCodes.NOT_FOUND);
   }
 
-  // Check enrollment
   const enrollment = await prisma.enrollment.findFirst({
     where: {
       userId,
@@ -618,10 +686,10 @@ export const submitQuiz = asyncHandler(async (req: Request, res: Response) => {
 
     if (isCorrect) {
       correctAnswers++;
-      earnedPoints += question.points || 0;
+      earnedPoints += question.points || 1;
     }
 
-    totalPoints += question.points || 0;
+    totalPoints += question.points || 1;
 
     return {
       questionId: question.id,
@@ -629,14 +697,29 @@ export const submitQuiz = asyncHandler(async (req: Request, res: Response) => {
       userAnswer,
       correctAnswer: question.correctAnswer,
       isCorrect,
-      points: isCorrect ? question.points || 0 : 0,
+      points: isCorrect ? question.points || 1 : 0,
+      explanation: question.explanation,
     };
   });
 
   const score = totalPoints > 0 ? Math.round((earnedPoints / totalPoints) * 100) : 0;
   const passed = score >= quiz.passingScore;
 
-  // If passed, mark lesson as complete
+  const quizSubmission = await prisma.quizSubmission.create({
+    data: {
+      userId,
+      quizId,
+      lessonId: quiz.lessonId,
+      enrollmentId: enrollment.id,
+      answers: answers as Prisma.JsonObject,
+      results: results as Prisma.JsonArray,
+      score,
+      passed,
+      timeSpent: timeSpent || null,
+      completedAt: new Date(),
+    },
+  });
+
   if (passed) {
     await prisma.progress.upsert({
       where: {
@@ -658,12 +741,17 @@ export const submitQuiz = asyncHandler(async (req: Request, res: Response) => {
         completedAt: new Date(),
       },
     });
+
+    await recalculateEnrollmentProgress(userId, enrollment.id, quiz.lesson.section.course.id);
   }
+
+  setCacheHeader(res, { noStore: true });
 
   res.status(StatusCodes.OK).json({
     success: true,
     message: 'Quiz submitted successfully',
     data: {
+      submissionId: quizSubmission.id,
       quizId,
       score,
       passed,
