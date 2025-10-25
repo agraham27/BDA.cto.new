@@ -3,6 +3,7 @@ import { StatusCodes } from 'http-status-codes';
 import authRoutes from '@/routes/auth';
 import profileRoutes from '@/routes/profile';
 import adminRoutes from '@/routes/admin';
+import studentRoutes from '@/routes/student';
 import uploadRoutes from '@/routes/upload';
 import streamRoutes from '@/routes/stream';
 
@@ -27,6 +28,7 @@ router.get('/api/health', (_req, res) => {
 router.use('/api/auth', authRoutes);
 router.use('/api/profile', profileRoutes);
 router.use('/api/admin', adminRoutes);
+router.use('/api/student', studentRoutes);
 router.use('/api/uploads', uploadRoutes);
 router.use('/api/stream', streamRoutes);
 
